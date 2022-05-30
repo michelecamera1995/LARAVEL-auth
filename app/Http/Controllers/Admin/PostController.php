@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\PostsModel;
+use Stringable;
 
 class PostController extends Controller
 {
@@ -15,6 +17,8 @@ class PostController extends Controller
     public function index()
     {
         //
+        $posts = PostsModel::all();
+        return view('return.posts.index', compact('posts'));
     }
 
     /**
@@ -25,6 +29,7 @@ class PostController extends Controller
     public function create()
     {
         //
+        return view('admin.posts.create');
     }
 
     /**
@@ -36,6 +41,24 @@ class PostController extends Controller
     public function store(Request $request)
     {
         //
+        $request->validate([
+            'title' => 'required | max:250',
+            'content' =>    'required'
+        ]);
+        $data = $request->all();
+        $newPost = new PostsModel();
+        $newPost->fill($data);
+        $slug = Str::slug($newPost->title);
+        $alternateslug = $slug;
+        $postexist = PostsModel::where('slug', $slug)->first();
+        $counter = 1;
+        while ($postexist) {
+            $alternateslug = $slug . '_' . $counter;
+            $counter++;
+            $postexist = PostsModel::where('slug', $alternateslug)->first();
+        }
+        $newPost->slug = $alternateslug;
+        $newPost->save();
     }
 
     /**
