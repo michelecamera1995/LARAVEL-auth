@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\PostsModel;
-use Stringable;
+use Illuminate\Support\Str;
+
 
 class PostController extends Controller
 {
@@ -70,6 +71,12 @@ class PostController extends Controller
     public function show($id)
     {
         //
+        $data = PostsModel::find($id);
+        if ($data) {
+            return view('admin.posts.show', compact('data'));
+        } else {
+            abort(404);
+        }
     }
 
     /**
@@ -81,6 +88,8 @@ class PostController extends Controller
     public function edit($id)
     {
         //
+        $data = PostsModel::findOrFail($id);
+        return view('admin.posts.edit', compact('data'));
     }
 
     /**
@@ -93,6 +102,11 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $posts = PostsModel::findOrFail($id);
+        $data = $request->all();
+        $posts->fill($data);
+        $posts->update();
+        return redirect()->route('admin.posts.index');
     }
 
     /**
@@ -104,5 +118,8 @@ class PostController extends Controller
     public function destroy($id)
     {
         //
+        $posts = PostsModel::find($id);
+        $posts->delete();
+        return redirect()->route('admin.posts.index');
     }
 }
