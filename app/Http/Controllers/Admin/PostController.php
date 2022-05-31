@@ -8,6 +8,7 @@ use App\PostsModel;
 
 
 
+
 class PostController extends Controller
 {
     /**
@@ -51,6 +52,7 @@ class PostController extends Controller
         $newPost->fill($data);
         $newPost->slug = PostsModel::convertToSlug($newPost->title);
         $newPost->save();
+        return view('admin.posts.index');
     }
 
     /**
@@ -115,7 +117,7 @@ class PostController extends Controller
     public function destroy(PostsModel $post)
     {
         //
-        $post->delete();
+        $post->delete($post);
         return redirect()->route('admin.posts.index');
     }
 }
