@@ -49,16 +49,7 @@ class PostController extends Controller
         $data = $request->all();
         $newPost = new PostsModel();
         $newPost->fill($data);
-        $slug = Str::slug($newPost->title);
-        $alternateslug = $slug;
-        $postexist = PostsModel::where('slug', $slug)->first();
-        $counter = 1;
-        while ($postexist) {
-            $alternateslug = $slug . '_' . $counter;
-            $counter++;
-            $postexist = PostsModel::where('slug', $alternateslug)->first();
-        }
-        $newPost->slug = $alternateslug;
+        $newPost->slug = PostsModel::convertToSlug($newPost->title);
         $newPost->save();
     }
 
@@ -68,12 +59,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(PostsModel $post)
     {
         //
-        $data = PostsModel::find($id);
-        if ($data) {
-            return view('admin.posts.show', compact('data'));
+        if ($post) {
+            return view('admin.posts.show', compact('post'));
         } else {
             abort(404);
         }
@@ -85,11 +75,14 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(PostsModel $post)
     {
         //
-        $data = PostsModel::findOrFail($id);
-        return view('admin.posts.edit', compact('data'));
+        if ($post) {
+            return view('admin.posts.edit', compact('post'));
+        } else {
+            abort(404);
+        }
     }
 
     /**
@@ -99,13 +92,17 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, PostsModel $post)
     {
         //
-        $posts = PostsModel::findOrFail($id);
+        $request->validate([
+            'title' => 'required | max:250',
+            'content' =>    'required'
+        ]);
         $data = $request->all();
-        $posts->fill($data);
-        $posts->update();
+        $post->fill($data);
+        $post->slug = PostsModel::convertToSlug($post->title);
+        $post->update();
         return redirect()->route('admin.posts.index');
     }
 
@@ -115,11 +112,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(PostsModel $post)
     {
         //
-        $posts = PostsModel::find($id);
-        $posts->delete();
+        $post->delete();
         return redirect()->route('admin.posts.index');
     }
 }
