@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 class PostsModel extends Model
 {
     //
+    protected $table = "posts";
     protected $fillable = ['title', 'content', 'slug'];
 
     public static function convertToSlug($title)
