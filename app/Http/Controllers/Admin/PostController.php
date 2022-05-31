@@ -117,7 +117,9 @@ class PostController extends Controller
     public function destroy(PostsModel $post)
     {
         //
-        $post->delete($post);
+        if ($post) {
+            $post->delete();
+        }
         return redirect()->route('admin.posts.index');
     }
 }
